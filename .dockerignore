@@ -4,3 +4,4 @@ wars/
 .migrated/
 **/target/classes
 **/*.log
+docs/

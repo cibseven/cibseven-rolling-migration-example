@@ -7,7 +7,7 @@ on:
     branches: [main]
   pull_request:
   schedule:
-    - cron: "0 5 * * 1"   # weekly: the recipe and the CIB seven artifacts live outside this repository
+    - cron: "0 5 * * 1"   # weekly: the CIB seven snapshot artifacts live outside this repository
   workflow_dispatch:
 
 permissions:
@@ -46,6 +46,9 @@ jobs:
           cache: maven
       - name: Migrate the process application and run its tests on both engines
         run: app/migrate.sh
+        env:
+          # recipe pinned to a release tag of cibseven/cibseven-migration, so that CI results are reproducible
+          RECIPE_URL: https://raw.githubusercontent.com/cibseven/cibseven-migration/v2.2.0/replace-camunda-with-cibseven.yml
       - name: Check the result
         run: |
           echo "CIB seven WAR built against: $(cat wars/cibseven/VERSION)"

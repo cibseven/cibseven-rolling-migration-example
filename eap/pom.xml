@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Provisions a plain JBoss EAP 8.1 server (full default configs) with Galleon into target/server.
+     The server is then copied into registry.redhat.io/jboss-eap-8/eap81-openjdk21-runtime-openshift-rhel9. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.cibseven.examples</groupId>
+  <artifactId>eap81-server</artifactId>
+  <version>1.0</version>
+  <packaging>pom</packaging>
+
+  <repositories>
+    <repository><id>redhat-ga</id><url>https://maven.repository.redhat.com/ga/</url></repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository><id>redhat-ga</id><url>https://maven.repository.redhat.com/ga/</url></pluginRepository>
+  </pluginRepositories>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jboss.eap.plugins</groupId>
+        <artifactId>eap-maven-plugin</artifactId>
+        <version>2.0.3.Final-redhat-00002</version>
+        <configuration>
+          <channels>
+            <channel>
+              <manifest>
+                <groupId>org.jboss.eap.channels</groupId>
+                <artifactId>eap-8.1</artifactId>
+              </manifest>
+            </channel>
+          </channels>
+          <feature-packs>
+            <feature-pack>
+              <location>org.jboss.eap:wildfly-ee-galleon-pack</location>
+            </feature-pack>
+          </feature-packs>
+          <provisioning-dir>server</provisioning-dir>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals><goal>provision</goal></goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

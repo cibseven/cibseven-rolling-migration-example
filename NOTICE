@@ -1,0 +1,11 @@
+CIB seven rolling migration example
+Copyright 2026 CIB software GmbH
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+It contains only original scripts, configuration and sample code. Third-party software (Red Hat JBoss Enterprise
+Application Platform, Camunda 7 Community Edition, CIB seven, PostgreSQL JDBC driver, container images) is downloaded
+at build time under its own licence and is not part of this repository - see "Licences and trademarks" in README.md.
+
+Red Hat and JBoss are trademarks of Red Hat, LLC, registered in the United States and other countries. Camunda is a
+trademark of Camunda Services GmbH. All other trademarks are the property of their respective owners.

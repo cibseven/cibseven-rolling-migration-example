@@ -1,0 +1,6 @@
+dist/
+app/
+wars/
+.migrated/
+**/target/classes
+**/*.log

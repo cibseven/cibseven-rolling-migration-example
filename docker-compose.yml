@@ -1,0 +1,66 @@
+# Two JBoss EAP 8.1 nodes, active-active on one PostgreSQL 17, behind HAProxy.
+# Images and host ports come from .env (written by reset.sh); rolling-upgrade.sh switches NODE1_IMAGE / NODE2_IMAGE
+# node by node. EDITION=ee adds docker-compose.ee.yml (licence file) via COMPOSE_FILE.
+
+x-node: &node
+  restart: "no"
+  stop_grace_period: 60s
+  depends_on:
+    db:
+      condition: service_healthy
+  environment: &node-env
+    DB_URL: jdbc:postgresql://db:5432/engine
+    DB_USERNAME: engine
+    DB_PASSWORD: engine
+    JAVA_OPTS_APPEND: "-Xms512m -Xmx1g"
+  healthcheck:
+    test: ["CMD-SHELL", "curl -fs http://localhost:8080/engine-rest/process-definition/count >/dev/null"]
+    interval: 5s
+    retries: 60
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: engine
+      POSTGRES_USER: engine
+      POSTGRES_PASSWORD: engine
+    ports: ["${DB_PORT:-25432}:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Camunda 7.24.0 create scripts (copied by reset.sh from the downloaded distribution)
+      - ./build/sql-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U engine -d engine"]
+      interval: 3s
+      retries: 30
+
+  node1:
+    <<: *node
+    image: ${NODE1_IMAGE:-eap81-camunda:7.24.0}
+    hostname: node1
+    environment:
+      <<: *node-env
+      NODE_NAME: node1
+    ports: ["${NODE1_PORT:-8081}:8080"]
+
+  node2:
+    <<: *node
+    image: ${NODE2_IMAGE:-eap81-camunda:7.24.0}
+    hostname: node2
+    environment:
+      <<: *node-env
+      NODE_NAME: node2
+    ports: ["${NODE2_PORT:-8082}:8080"]
+
+  lb:
+    image: haproxy:3.2
+    volumes:
+      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+    ports:
+      - "${LB_PORT:-8088}:8080"            # engine REST and UIs through the load balancer
+      - "${STATS_PORT:-8404}:8404"         # HAProxy stats page (live node status)
+      - "127.0.0.1:${ADMIN_PORT:-9999}:9999"   # HAProxy runtime API (maintenance on/off)
+
+volumes:
+  pgdata:

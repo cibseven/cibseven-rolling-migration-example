@@ -1,0 +1,10 @@
+# downloads, build output and local state (created by the scripts)
+dist/
+build/
+eap/target/
+app/target/
+wars/
+.migrated/
+.env
+*.log
+__pycache__/

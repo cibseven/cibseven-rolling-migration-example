@@ -1,0 +1,9 @@
+# EDITION=ee only: mounts your CIB seven Enterprise licence into both nodes (added via COMPOSE_FILE in .env).
+x-licence: &licence
+  - ${CIBSEVEN_LICENSE_FILE:-${HOME}/.cibseven/cibseven-license.txt}:/home/jboss/.cibseven/cibseven-license.txt:ro
+
+services:
+  node1:
+    volumes: *licence
+  node2:
+    volumes: *licence

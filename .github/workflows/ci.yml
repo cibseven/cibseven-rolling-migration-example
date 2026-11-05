@@ -1,0 +1,56 @@
+# Light checks without JBoss EAP images or registry.redhat.io: scripts and configuration, and the process application
+# migrated with the public OpenRewrite recipe and tested on Camunda 7.24.0 and on CIB seven (app/migrate.sh).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 5 * * 1"   # weekly: the recipe and the CIB seven artifacts live outside this repository
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Scripts and configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: shellcheck
+        run: shellcheck -S warning ./*.sh app/*.sh
+      - name: Python syntax
+        run: python3 -m py_compile ./*.py
+      - name: Docker Compose files
+        run: |
+          docker compose -f docker-compose.yml config -q
+          docker compose -f docker-compose.yml -f docker-compose.ee.yml config -q
+
+  migration:
+    name: Tests on Camunda 7.24.0 and CIB seven (app/migrate.sh)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Migrate the process application and run its tests on both engines
+        run: app/migrate.sh
+      - name: Check the result
+        run: |
+          echo "CIB seven WAR built against: $(cat wars/cibseven/VERSION)"
+          changed=$(git -C .migrated diff --name-only -- '*.bpmn' | wc -l)
+          [ "$changed" -eq 0 ] || { echo "::error::the migration changed $changed BPMN file(s)"; exit 1; }
+          if grep -q fallback wars/cibseven/VERSION; then
+            echo "::warning::the build against the CIB seven target version failed; app/migrate.sh used the recipe output as generated"
+          fi

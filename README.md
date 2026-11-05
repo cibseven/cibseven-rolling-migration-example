@@ -1,5 +1,7 @@
 # Zero-downtime migration from Camunda 7 to CIB seven
 
+[![CI](https://github.com/cibseven/cibseven-rolling-migration-example/actions/workflows/ci.yml/badge.svg)](https://github.com/cibseven/cibseven-rolling-migration-example/actions/workflows/ci.yml)
+
 This example moves a running two-node cluster on Red Hat® JBoss® Enterprise Application Platform (EAP) 8.1 from
 **Camunda 7.24.0** to **CIB seven 3.0**, one node at a time, while process instances keep being started. No request
 fails. Instances that were started on Camunda 7 finish on CIB seven.
@@ -266,6 +268,7 @@ with Camunda class names; see
 | [`docker-compose.yml`](docker-compose.yml), [`haproxy.cfg`](haproxy.cfg) | the cluster and the load balancer |
 | [`lib.sh`](lib.sh) | settings shared by all scripts |
 | [`init-users.py`](init-users.py) | creates the demo user |
+| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | CI: checks the scripts and runs `app/migrate.sh` (tests on Camunda 7.24.0 and CIB seven), without EAP images |
 
 ## Configuration
 
